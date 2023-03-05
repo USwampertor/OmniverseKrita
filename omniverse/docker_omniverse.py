@@ -20,6 +20,7 @@ import ctypes
 import os
 import sys
 import time
+import json
 
 # Title
 DOCKER_TITLE = 'Omniverse Docker'
@@ -172,8 +173,10 @@ class DockerOmniverse(DockWidget):
 
     self.reloadButton.clicked.connect(self.reloadWidget)
     self.loadDLL()
+
   ##########
 
+  
   def buildUI(self):
     """ 
     Creates the main UI and all its content.
@@ -318,7 +321,7 @@ class DockerOmniverse(DockWidget):
       try:
         # change this for os.path.dirname(os.path.abspath(__file__))
         location = (os.path.dirname(os.path.abspath(__file__)) + libname)        
-
+        self.debugLog(location)
         # get the lib location
         self.lib = ctypes.CDLL(location)
         self.defaultDestinationPath = "omniverse://localhost/Projects/Krita/"
@@ -369,6 +372,22 @@ class DockerOmniverse(DockWidget):
     return self.isLoaded
   ##########
 
+  # Loads the connections from the saved file
+  def loadConnections(self):
+    self.debugLog("Loading connections")
+    fileName = (os.path.dirname(os.path.abspath(__file__)) + 
+                ("\\" if sys.platform == "win32" else "/") + 
+                "connections.json")
+    f = open(fileName)
+    self.debugLog("Loaded file with connections")
+    self.connectionsJSON = json.load(f)
+    if self.connectionsJSON is None:
+      self.debugLog("Error getting connections")
+    for i in self.connectionsJSON["connections"]:
+      self.debugLog(i)
+    self.debugLog("Loaded connections")
+  ##########
+
   # Connects to the Omniverse platform
   # TODO: Handle errors better
   def connectToOmniverse(self):
@@ -398,10 +417,16 @@ class DockerOmniverse(DockWidget):
     else:
       self.debugLog("Shutting down omniverse... ")
       self.connectButton.setText("Shutting down...")
-      self.lib.cShutdown()
       self.connectButton.setText("Connect to Omniverse")
       self.isConnected = False
+      fileName = (os.path.dirname(os.path.abspath(__file__)) + 
+                  ("\\" if sys.platform == "win32" else "/") + 
+                  "connections.json")
+      f = open(fileName, "w")
+      f.write(json.dumps(self.connectionsJSON))
+      f.close()
     self.setElements()
+    self.loadConnections()
   ##########
 
   # Checks if the object still exists and opens it.
@@ -469,9 +494,7 @@ class DockerOmniverse(DockWidget):
       fullPath = fullPath + self.omniFileInput.text() + ".png"
       # First check if file is part of the cache folder
       defaultOVCachéPath = (os.getenv('LOCALAPPDATA') + 
-                            ("\\" 
-                             if (sys.platform == "win32") 
-                             else "/") + 
+                            ("\\" if (sys.platform == "win32") else "/") + 
                             "ov")
       
       # Case 1. The file is part of the caché. We should update the file IF the
@@ -647,14 +670,17 @@ class DockerOmniverse(DockWidget):
     hLayout2.addWidget(self.dlg.fileList)
 
     defaultConnection = QListWidgetItem("localhost", self.dlg.connections)
-    addConnection = QListWidgetItem("Add...", self.dlg.connections)
-
-    # krita icons
     defaultConnection.setIcon(Krita.instance().icon('drive-harddisk'))
-    addConnection.setIcon(Krita.instance().icon('addlayer'))
 
-    self.dlg.fileList.insertItem(0, defaultConnection)
-    self.dlg.fileList.insertItem(1, addConnection)
+    for jsonConnection in self.connectionsJSON["connections"]:
+      newConnection = QListWidgetItem(jsonConnection, self.dlg.connections)
+      newConnection.setIcon(Krita.instance().icon('drive-harddisk'))
+
+    addConnection = QListWidgetItem("Add...", self.dlg.connections)
+    addConnection.setIcon(Krita.instance().icon('addlayer'))
+    
+    # self.dlg.fileList.insertItem(0, defaultConnection)
+    # self.dlg.fileList.insertItem(1, addConnection)
 
     hLayout3 = QHBoxLayout()
     vLayout.addLayout(hLayout3)
@@ -721,7 +747,7 @@ class DockerOmniverse(DockWidget):
 
             self.currentOmniFolder = "omniverse://" + newConnectionText + "/"
             self.currentConnection = newConnectionText
-            
+            self.connectionsJSON["connections"].append(newConnectionText)
             # old blocking version
             self.refreshOmniverseFolder()
            
