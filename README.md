@@ -42,6 +42,10 @@ When the docker is loaded, click the **Connect** Button and it will sign in to t
   * Users can load, create, save, and live sync files
   * Users can connect to a remote host
   * Connecting to a remote host may take time
+* 05/03/2023 Updated connection settings
+  * Users can add new connections to remote hosts and save that connection
+  * When opening Krita again, the connections will be saved
+  * Saving the connections is done when disconnecting from the omniverse client
 
 ## TODO:
 * Handle error responses
