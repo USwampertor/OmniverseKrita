@@ -1,3 +1,5 @@
+<img src="./docs/OVKrita.png" alt="OvKritaLogo" width="250" height="250"/>
+
 # OmniverseKrita
 A simple Omniverse connector for Krita
 
@@ -24,6 +26,14 @@ The plugin also contains experimental features that can be activated or disabled
 * Live saving and updating files
 * Live syncing files
 * Loading external nucleus connections
+
+
+<iframe width="560" height="315"
+  src="./docs/2023-03-06 12-10-19.mp4" 
+  frameborder="0" 
+  allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
+  allowfullscreen>
+</iframe>
 
 ## How to use it
 Open the Omniverse launcher and log in to the Nucleus server system. After that Just drop the content of the [omniverse folder](./omniverse/) to the pykrita folder and open Krita.
